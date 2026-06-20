@@ -87,10 +87,19 @@ Focus on Part A (sections 01–13) for system design rounds, and Part B sections
 | 24 | [Lifecycle Management](24-lifecycle.md) | LLD | Activity/Fragment lifecycle, ViewModel scoping, SavedStateHandle, repeatOnLifecycle |
 | 25 | [Notifications](25-notifications.md) | Both | Channels, FCM data messages, styles, deep links, POST_NOTIFICATIONS |
 | 26 | [On-Device ML & Local LLMs](26-on-device-ml-llm.md) | Both | TFLite, ML Kit, Gemini Nano/AICore, VAD, predictive text |
-| 27 | [Common Libraries & Dependency Management](27-common-libraries.md) | LLD | Gson/Moshi/KotlinX, Hilt/Koin, Coil/Glide, testing stack, Gradle, AAB size |
+| 27 | [Common Libraries & Dependency Management](27-common-libraries.md) | LLD | Gson/Moshi/KotlinX, Hilt/Koin, Coil/Glide, testing stack, Gradle |
 | 28 | [Maps Integration](28-maps-integration.md) | Both | Google Maps/HERE/Mapbox comparison, ride-sharing pipeline, smooth marker animation, geofencing |
-| 29 | [Navigation](29-navigation.md) | Both | NavHost, deeplink, navigating composables |
-| 30 | [In-App Purchases](30-in-app-purchases.md) | Both | billing, purchase flows |
+
+### Part C — Architecture & Platform Gaps
+
+| # | Section | Round | Key topics |
+|---|---|---|---|
+| 29 | [Navigation Architecture](29-navigation.md) | Both | Type-safe routes (Nav 2.8+), nested graphs, bottom nav back stacks, deep links, multi-module nav |
+| 30 | [In-App Purchases & Subscriptions](30-in-app-purchases.md) | Both | Billing Library 7+, consumable/non-consumable/subscription types, server-side validation, subscription states |
+| 31 | [WebRTC & Video Calling](31-webrtc.md) | Both | P2P vs SFU vs MCU, ICE/STUN/TURN, PeerConnection, signaling, simulcast |
+| 32 | [Paging 3 & Pagination](32-paging.md) | LLD | PagingSource, RemoteMediator, remote keys, LazyPagingItems, separators, testing |
+| 33 | [Testing Strategies](33-testing.md) | LLD | Test pyramid, fakes vs mocks, Turbine, Room in-memory, MockWebServer, Compose UI testing, Paparazzi |
+| 34 | [Kotlin Multiplatform (KMP)](34-kmp.md) | HLD | expect/actual, Ktor, SQLDelight, shared Repository, Compose Multiplatform, KMP vs Flutter/RN |
 
 ---
 
@@ -130,7 +139,7 @@ Every section follows a consistent structure:
 | Ride-sharing app (Uber) | 05, 06, 28 |
 | Music player (Spotify) | 15, 16, 07 |
 | Social media feed (Instagram) | 01, 02, 03, 06, 20 |
-| E-commerce app (Amazon) | 02, 03, 11, 20 |
+| E-commerce app (Amazon) | 02, 03, 11, 20, 30 |
 | Voice assistant (Alexa) | 16, 17, 26 |
 | Maps / navigation app | 07, 28 |
 | Note-taking app (offline-first) | 03, 04, 08 |
@@ -139,3 +148,7 @@ Every section follows a consistent structure:
 | Image loading library | 20, 21 |
 | A/B testing system | 11 |
 | Crash reporting system | 09 |
+| Paginated feed | 02, 32 |
+| Video calling app (Zoom) | 05, 31 |
+| Multi-screen checkout flow | 24, 29, 30 |
+| Cross-platform app (Android + iOS) | 34 |
