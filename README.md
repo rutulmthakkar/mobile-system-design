@@ -89,6 +89,8 @@ Focus on Part A (sections 01–13) for system design rounds, and Part B sections
 | 26 | [On-Device ML & Local LLMs](26-on-device-ml-llm.md) | Both | TFLite, ML Kit, Gemini Nano/AICore, VAD, predictive text |
 | 27 | [Common Libraries & Dependency Management](27-common-libraries.md) | LLD | Gson/Moshi/KotlinX, Hilt/Koin, Coil/Glide, testing stack, Gradle, AAB size |
 | 28 | [Maps Integration](28-maps-integration.md) | Both | Google Maps/HERE/Mapbox comparison, ride-sharing pipeline, smooth marker animation, geofencing |
+| 29 | [Navigation](29-navigation.md) | Both | NavHost, deeplink, navigating composables |
+| 30 | [In-App Purchases](30-in-app-purchases.md) | Both | billing, purchase flows |
 
 ---
 
