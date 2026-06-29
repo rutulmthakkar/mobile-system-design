@@ -4807,3 +4807,113 @@ coVerify(exactly = 0) { mockRepo.save(any()) }
 val mockRepo = mockk<CryptoRepository>(relaxed = true)
 ```
 
+
+### Complete Kotlin Flow Operators Reference Guide
+
+| Operator | Real-World Use Case | When to Use | When to Avoid |
+| :--- | :--- | :--- | :--- |
+| **`map`** | Transforming raw data models into UI display models. | Transforming *every* item into something else synchronously. | When the transformation requires an async network/DB call. |
+| **`filter`** | Dropping search terms shorter than 2 characters. | Skipping items that do not match a boolean condition. | When you want to alter the item's underlying data structure. |
+| **`debounce`** | Waiting for a user to finish typing a search query. | Pausing emissions until a brief quiet period has passed. | When every single event matters (like button clicks). |
+| **`distinctUntilChanged`** | Preventing UI redraws if the user re-clicks the same filter. | Skipping duplicate consecutive emissions. | When identical sequential events still require action. |
+| **`combine`** | Merging user filter selections with database results. | Merging 2+ independent flows; triggers on *any* update. | When you need to fetch new async data based on an input. |
+| **`flatMapLatest`** | Canceling an old API search request when user types more text. | Switching to a *new async flow* and canceling the old one. | When your internal transformation is fast and synchronous. |
+| **`flatMapMerge`** | Fetching data or downloading files concurrently from a list. | Transforming items into async flows that run *at the same time*. | When order matters, or when old tasks should be canceled. |
+| **`zip`** | Pairing a User Profile and a User Wallet together once. | Pairing items from 2 flows strictly 1-to-1 (waits for both). | When either flow updates frequently and independently. |
+| **`onEach`** | Logging updates to Logcat or analytics tracking. | Performing side-effects *without* changing the data payload. | Transforming data or running heavy async tasks. |
+| **`onStart`** | Showing a loading spinner before network data drops. | Executing an action or emitting a value before collection begins. | Performing heavy, non-UI background tasks. |
+| **`catch`** | Catching a database crash and showing an error UI. | Handling exceptions thrown by upstream operators safely. | Trying to catch errors that occur *outside* the flow stream. |
+
+---
+
+### Complete Production-Ready Flow Pipeline
+
+This architecture brings all 11 operators together into a production-ready reactive pipeline inside an Android `ViewModel`.
+
+```kotlin
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+
+class CryptoViewModel(
+    private val repository: CryptoRepository
+) : ViewModel() {
+
+    // Input streams driven by user actions
+    val searchQuery = MutableStateFlow("")
+    val filterFavoritesOnly = MutableStateFlow(false)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<CryptoUiState> = searchQuery
+        // 1. DEBOUNCE: Wait 300ms for user to pause typing before forwarding query
+        .debounce(300L)
+        
+        // 2. DISTINCTUNTILCHANGED: Ignore if user types 'A', deletes it, types 'A' within 300ms
+        .distinctUntilChanged()
+        
+        // 3. ONSTART: Instantly emit a safe signal to show loading indicators during setup
+        .onStart { emit("") }
+        
+        // 4. FILTER: Stop processing short queries to protect network bandwidth
+        .filter { query -> query.length >= 2 || query.isEmpty() }
+        
+        // 5. FLATMAPLATEST: Call the DB/API. Kills previous search job if user types a new letter
+        .flatMapLatest { query -> 
+            if (query.isEmpty()) flowOf(emptyList()) else repository.searchCryptos(query)
+        }
+        
+        // 6. COMBINE: Blend search results with favorite filters; updates if either change
+        .combine(filterFavoritesOnly) { cryptoList, favoritesOnly ->
+            if (favoritesOnly) cryptoList.filter { it.isFavorite } else cryptoList
+        }
+        
+        // 7. MAP: Wrap finalized domain models inside your UI layer State wrapper
+        .map { finalFilteredList -> 
+            CryptoUiState.Success(data = finalFilteredList) 
+        }
+        
+        // 8. ONEACH: Execute side-effects like background analytics or debugging logs
+        .onEach { state -> 
+            println("Pipeline updated UI state successfully: \$state") 
+        }
+        
+        // 9. CATCH: Final safety net catching upstream errors (DB errors, HTTP issues, etc.)
+        .catch { exception -> 
+            emit(CryptoUiState.Error(exception.message ?: "An unexpected error occurred")) 
+        }
+        
+        // 10. STATEIN: Cast cold processing stream into a UI-readable Hot StateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000), // 5s grace period for screen rotations
+            initialValue = CryptoUiState.Loading
+        )
+
+    // 11. ZIP / FLATMAPMERGE BONUS EXAMPLE: Fetching independent metadata concurrently
+    fun fetchDetailsAndPriceConcurrently(cryptoId: String) {
+        val detailsFlow = repository.getDetails(cryptoId)
+        val priceFlow = repository.getRealTimePrice(cryptoId)
+
+        detailsFlow.zip(priceFlow) { details, price ->
+            "Price of \({details.name} is now \$\){price.amount}"
+        }.onEach { result ->
+            println(result)
+        }.launchIn(viewModelScope)
+    }
+}
+
+// Support definitions for context
+sealed interface CryptoUiState {
+    object Loading : CryptoUiState
+    data class Success(val data: List<Crypto>) : CryptoUiState
+    data class Error(val message: String) : CryptoUiState
+}
+data class Crypto(val id: String, val name: String, val isFavorite: Boolean)
+data class Price(val amount: Double)
+interface CryptoRepository { 
+    fun searchCryptos(query: String): Flow<List<Crypto>> 
+    fun getDetails(id: String): Flow<Crypto>
+    fun getRealTimePrice(id: String): Flow<Price>
+}
+```
